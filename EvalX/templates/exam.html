@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Exam</title>
+
+    <style>
+        body {
+            background: #0f172a;
+            color: white;
+            font-family: Arial;
+            text-align: center;
+        }
+
+        .container {
+            width: 70%;
+            margin: auto;
+            margin-top: 30px;
+        }
+
+        .question {
+            background: #1e293b;
+            padding: 20px;
+            margin: 15px 0;
+            border-radius: 10px;
+        }
+
+        button {
+            padding: 10px 20px;
+            background: #3b82f6;
+            border: none;
+            color: white;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        .warning {
+            color: #f87171;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+
+        #startScreen {
+            margin-top: 100px;
+        }
+
+        #examContent {
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- 🔥 START SCREEN -->
+    <div id="startScreen">
+        <h2>🚀 Ready to Start Exam</h2>
+
+        <p style="color:#f59e0b; font-weight:bold;">
+            ⚠ Rules:
+            <br>• Tab Switch = 1 point
+            <br>• Window Blur = 1 point
+            <br>• Exit Fullscreen = 2 points
+            <br>• 5 points = Auto Submit
+        </p>
+
+        <button onclick="startExam()">Start Exam</button>
+    </div>
+
+    <!-- 🔥 EXAM CONTENT -->
+    <div id="examContent">
+
+        <h2>🚀 Exam Started</h2>
+
+        <h3 id="timer" style="color:#f87171;">⏳ Loading timer...</h3>
+
+        <p class="warning" id="warningBox">⚠ Violations: 0 / 5</p>
+
+        <form method="POST" action="/submit_exam/{{ exam_id }}" id="examForm">
+
+            <div class="container">
+
+                {% for q in questions %}
+                <div class="question">
+
+                    <h4>{{ q['question'] }}</h4>
+
+                    <label><input type="radio" name="q{{ q['id'] }}" value="{{ q['option1'] }}"> {{ q['option1'] }}</label><br>
+                    <label><input type="radio" name="q{{ q['id'] }}" value="{{ q['option2'] }}"> {{ q['option2'] }}</label><br>
+                    <label><input type="radio" name="q{{ q['id'] }}" value="{{ q['option3'] }}"> {{ q['option3'] }}</label><br>
+                    <label><input type="radio" name="q{{ q['id'] }}" value="{{ q['option4'] }}"> {{ q['option4'] }}</label><br>
+
+                </div>
+                {% endfor %}
+
+                <button type="submit">Submit Exam</button>
+
+            </div>
+        </form>
+
+    </div>
+
+    <!-- 🔥 START EXAM + FULLSCREEN -->
+    <script>
+        function startExam() {
+            document.documentElement.requestFullscreen().then(() => {
+                document.getElementById("startScreen").style.display = "none";
+                document.getElementById("examContent").style.display = "block";
+                startTimer();
+            }).catch(() => {
+                alert("⚠ Please allow fullscreen to start exam");
+            });
+        }
+    </script>
+
+    <!-- 🔥 TIMER -->
+    <script>
+        let endTime = new Date("{{ end_time }}").getTime();
+
+        function startTimer() {
+            let timer = setInterval(function () {
+
+                let now = new Date().getTime();
+                let distance = endTime - now;
+
+                if (distance <= 0) {
+                    clearInterval(timer);
+
+                    document.getElementById("timer").innerText = "⛔ Time Over";
+
+                    alert("⏰ Time's up! Auto submitting exam...");
+                    document.getElementById("examForm").submit();
+                    return;
+                }
+
+                let minutes = Math.floor(distance / (1000 * 60));
+                let seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+                seconds = seconds < 10 ? "0" + seconds : seconds;
+
+                document.getElementById("timer").innerText =
+                    "⏳ Time Left: " + minutes + "m " + seconds + "s";
+
+            }, 1000);
+        }
+    </script>
+
+    <!-- 🚨 ANTI-CHEAT -->
+    <script>
+
+        let violationCount = 0;
+
+        function logViolation(type) {
+
+            let points = 1;
+
+            if (type === "Exited Fullscreen") {
+                points = 2;
+            }
+
+            violationCount += points;
+
+            document.getElementById("warningBox").innerText =
+                "⚠ " + type + " | Total: " + violationCount + " / 5";
+
+            fetch("/log_violation", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/x-www-form-urlencoded"
+                },
+                body: "exam_id={{ exam_id }}&type=" + type
+            });
+
+            if (violationCount >= 5) {
+                alert("🚨 Too many violations! Exam will be submitted.");
+                document.getElementById("examForm").submit();
+            }
+        }
+
+        // TAB SWITCH
+        document.addEventListener("visibilitychange", function () {
+            if (document.hidden) {
+                logViolation("Tab Switch");
+            }
+        });
+
+        // WINDOW BLUR
+        window.addEventListener("blur", function () {
+            logViolation("Window Blur");
+        });
+
+    </script>
+
+    <!-- 🔒 FULLSCREEN EXIT DETECTION -->
+    <script>
+        document.addEventListener("fullscreenchange", function () {
+            if (!document.fullscreenElement) {
+                logViolation("Exited Fullscreen");
+            }
+        });
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>EvalX Staff Dashboard</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <style>
+        body {
+            background: #0f172a;
+            color: white;
+            font-family: 'Segoe UI';
+        }
+
+        /* SIDEBAR */
+        .sidebar {
+            width: 240px;
+            height: 100vh;
+            position: fixed;
+            background: #020617;
+            border-right: 1px solid #1e293b;
+            padding: 20px;
+        }
+
+            .sidebar h2 {
+                text-align: center;
+                margin-bottom: 40px;
+            }
+
+            .sidebar a {
+                display: block;
+                padding: 12px;
+                margin-bottom: 10px;
+                border-radius: 8px;
+                color: #cbd5f5;
+                text-decoration: none;
+            }
+
+                .sidebar a:hover {
+                    background: #1e293b;
+                    color: white;
+                }
+
+        .logout {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            right: 20px;
+            background: #ef4444;
+            text-align: center;
+            padding: 10px;
+            border-radius: 8px;
+        }
+
+        /* MAIN */
+        .main {
+            margin-left: 260px;
+            padding: 30px;
+        }
+
+        /* CARD */
+        .card {
+            background: #1e293b;
+            border-radius: 15px;
+            padding: 20px;
+            border: 1px solid #334155;
+            transition: 0.3s;
+            color: #e2e8f0;
+        }
+
+            .card:hover {
+                transform: translateY(-5px);
+                box-shadow: 0 0 15px rgba(0,255,255,0.2);
+            }
+
+            .card b {
+                color: #38bdf8;
+            }
+
+        /* BUTTON */
+        .btn-view {
+            display: block;
+            text-align: center;
+            padding: 10px;
+            border-radius: 10px;
+            text-decoration: none;
+            color: white;
+            background: linear-gradient(45deg, #06b6d4, #3b82f6);
+            margin-top: 8px;
+            transition: 0.3s;
+        }
+
+            .btn-view:hover {
+                opacity: 0.9;
+            }
+
+        .top-btn {
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+        <h2>⚡ EvalX</h2>
+
+        <!-- ✅ FIXED ROUTES -->
+        <a href="/staff">🏠 Dashboard</a>
+        <a href="/addexam">➕ Create Exam</a>
+
+        <a href="/logout" class="logout">Logout</a>
+    </div>
+
+    <!-- MAIN -->
+    <div class="main">
+
+        <h2 class="mb-4">👨‍🏫 Manage Exams</h2>
+
+        <!-- 🔥 CREATE BUTTON -->
+        <a href="/addexam" class="btn-view top-btn">
+            ➕ Create New Exam
+        </a>
+
+        <div class="row">
+
+            {% if exams|length == 0 %}
+            <h4>No exams available</h4>
+            {% endif %}
+
+            {% for exam in exams %}
+            <div class="col-md-4">
+                <div class="card mb-4">
+
+                    <h5>{{ exam['title'] }}</h5>
+
+                    <p><b>Subject:</b> {{ exam['subject'] }}</p>
+                    <p><b>Duration:</b> {{ exam['duration'] }} mins</p>
+
+                    <p><b>Start:</b> {{ exam['start_time'] }}</p>
+                    <p><b>End:</b> {{ exam['end_time'] }}</p>
+
+                    <!-- 🔥 ACTION BUTTONS -->
+                    <a href="/add_question/{{ exam['id'] }}" class="btn-view">
+                        ➕ Add Questions
+                    </a>
+
+                    <a href="/staff/attempts/{{ exam['id'] }}" class="btn-view">
+                        📊 View Attempts
+                    </a>
+                    <a href="/add_question/{{ exam['id'] }}">
+                    </a>
+
+                    <a href="/delete_exam/{{ exam['id'] }}"
+                       class="btn-view"
+                       style="background:#ef4444;">
+                        ❌ Delete Exam
+                    </a>
+
+                </div>
+            </div>
+            {% endfor %}
+
+        </div>
+
+    </div>
+
+</body>
+</html>
