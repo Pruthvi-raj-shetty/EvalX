@@ -179,6 +179,7 @@ Through this project I learned:
 # 👨‍💻 Author
 
 **Pruthvi Raj**
+**adithya kumar**
 
 BCA Student | Full Stack Developer | Cloud & Cybersecurity Enthusiast
 
